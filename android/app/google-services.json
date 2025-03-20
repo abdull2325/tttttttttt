@@ -1,0 +1,68 @@
+{
+  "project_info": {
+    "project_number": "16048215596",
+    "firebase_url": "https://trackorb-ed8c4-default-rtdb.firebaseio.com",
+    "project_id": "trackorb-ed8c4",
+    "storage_bucket": "trackorb-ed8c4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16048215596:android:e7385e5c8e0b9ba4f72389",
+        "android_client_info": {
+          "package_name": "com.TrackOrb"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxpmLQpf2Uoy4lcsXj3XfFZtcSe86VpqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16048215596:android:22b7a71eace39383f72389",
+        "android_client_info": {
+          "package_name": "com.awesomeproject"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxpmLQpf2Uoy4lcsXj3XfFZtcSe86VpqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:16048215596:android:a753e9abd754eb4ef72389",
+        "android_client_info": {
+          "package_name": "com.first"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAxpmLQpf2Uoy4lcsXj3XfFZtcSe86VpqM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
