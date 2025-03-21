@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert, ActivityIndicator } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, FlatList, Alert, ActivityIndicator, Share, Platform } from 'react-native';
 import RNFS from 'react-native-fs';
 import { useFocusEffect } from '@react-navigation/native';
 
@@ -31,6 +31,7 @@ interface FileInfo {
   name: string;
   path: string;
   isProcessed: boolean;
+  calculatedPath?: string; // Added to store the path to calculated file
 }
 
 // Constants for calculations
@@ -42,6 +43,7 @@ const DataProcessor = () => {
   const [processing, setProcessing] = useState<boolean>(false);
   const [selectedFile, setSelectedFile] = useState<FileInfo | null>(null);
   const [fileStats, setFileStats] = useState<{[key: string]: any}>({});
+  const [sharing, setSharing] = useState<boolean>(false);
   
   // Load available files when component mounts or comes into focus
   useFocusEffect(
@@ -58,18 +60,22 @@ const DataProcessor = () => {
       const filesInDir = await RNFS.readDir(dirPath);
       
       // Filter for IMU data CSV files
-      const imuFiles = filesInDir
-        .filter(file => file.name.startsWith('imu_data_') && file.name.endsWith('.csv'))
-        .map(file => {
-          const processedFilePath = `${dirPath}/processed_${file.name}`;
-          const calculatedFilePath = `${dirPath}/calculated_${file.name}`;
-          
-          return {
-            name: file.name,
-            path: file.path,
-            isProcessed: RNFS.exists(calculatedFilePath), // Mark as processed if calculated file exists
-          };
-        });
+      const imuFiles = await Promise.all(
+        filesInDir
+          .filter(file => file.name.startsWith('imu_data_') && file.name.endsWith('.csv'))
+          .map(async file => {
+            const processedFilePath = `${dirPath}/processed_${file.name}`;
+            const calculatedFilePath = `${dirPath}/calculated_${file.name}`;
+            const isProcessed = await RNFS.exists(calculatedFilePath);
+            
+            return {
+              name: file.name,
+              path: file.path,
+              isProcessed: isProcessed,
+              calculatedPath: isProcessed ? calculatedFilePath : undefined,
+            };
+          })
+      );
       
       setFiles(imuFiles);
       console.log(`Found ${imuFiles.length} IMU data files`);
@@ -276,7 +282,7 @@ const DataProcessor = () => {
     return Math.sqrt(ax * ax + ay * ay + az * az);
   };
 
-  // Calculate velocity (equivalent to Python function)
+
   const calculateVelocity = (data: IMUData[]): number[][] => {
     const velocityX: number[] = [0];
     const velocityY: number[] = [0];
@@ -303,7 +309,7 @@ const DataProcessor = () => {
     return [velocityX, velocityY, velocityZ];
   };
 
-  // Calculate distance (equivalent to Python function)
+  
   const calculateDistance = (data: IMUData[], velocityX: number[], velocityY: number[], velocityZ: number[]): number[] => {
     const distances: number[] = [0];
     
@@ -532,6 +538,106 @@ const DataProcessor = () => {
     }
   };
 
+  // Share file functionality
+  const shareFile = async (file: FileInfo) => {
+    try {
+      setSharing(true);
+      
+      // Determine which file to share
+      const filePath = file.isProcessed && file.calculatedPath 
+        ? file.calculatedPath 
+        : file.path;
+      
+      // For Android: We need to copy the file to external storage first
+      if (Platform.OS === 'android') {
+        const fileName = file.isProcessed 
+          ? `calculated_${file.name}` 
+          : file.name;
+        
+        // Check if external storage is available
+        const externalDir = RNFS.ExternalDirectoryPath;
+        if (!externalDir) {
+          throw new Error('External storage not available');
+        }
+        
+        // Create a temporary file in external storage
+        const tempFilePath = `${externalDir}/${fileName}`;
+        
+        // Copy the file to external storage
+        await RNFS.copyFile(filePath, tempFilePath);
+        
+        // Share the file from external storage
+        await Share.share({
+          title: fileName,
+          message: `IMU Data: ${fileName}`,
+          url: `file://${tempFilePath}`,
+        });
+        
+        // Clean up the temporary file
+        setTimeout(async () => {
+          try {
+            if (await RNFS.exists(tempFilePath)) {
+              await RNFS.unlink(tempFilePath);
+            }
+          } catch (error) {
+            console.warn('Error cleaning up temporary file:', error);
+          }
+        }, 10000); // Clean up after 10 seconds
+      } else {
+        // For iOS, we can share directly
+        await Share.share({
+          title: file.isProcessed ? `calculated_${file.name}` : file.name,
+          url: `file://${filePath}`,
+        });
+      }
+    } catch (error) {
+      console.error('Error sharing file:', error);
+      Alert.alert('Error', 'Failed to share file');
+    } finally {
+      setSharing(false);
+    }
+  };
+
+  // Copy file to Downloads (Android) or Documents (iOS)
+  const saveFileToDownloads = async (file: FileInfo) => {
+    try {
+      setSharing(true);
+      
+      // Determine which file to save
+      const filePath = file.isProcessed && file.calculatedPath 
+        ? file.calculatedPath 
+        : file.path;
+      
+      const fileName = file.isProcessed 
+        ? `calculated_${file.name}` 
+        : file.name;
+      
+      if (Platform.OS === 'android') {
+        // For Android: Save to Downloads folder
+        const downloadPath = `${RNFS.DownloadDirectoryPath}/${fileName}`;
+        
+        // Copy the file to Downloads
+        await RNFS.copyFile(filePath, downloadPath);
+        
+        Alert.alert(
+          'File Saved',
+          `File saved to Downloads folder as ${fileName}`
+        );
+      } else {
+        // For iOS: Share to Files app
+        await Share.share({
+          title: fileName,
+          url: `file://${filePath}`,
+        });
+      }
+    } catch (error) {
+      console.error('Error saving file to downloads:', error);
+      Alert.alert('Error', 'Failed to save file');
+    } finally {
+      setSharing(false);
+    }
+  };
+
   const renderFileItem = ({ item }: { item: FileInfo }) => (
     <View style={styles.fileItem}>
       <Text style={styles.fileName}>{item.name}</Text>
@@ -539,16 +645,37 @@ const DataProcessor = () => {
         <TouchableOpacity
           style={[styles.fileButton, { backgroundColor: '#26A69A' }]}
           onPress={() => processFile(item)}
-          disabled={processing}
+          disabled={processing || sharing}
         >
           <Text style={styles.fileButtonText}>
             {item.isProcessed ? 'Reprocess' : 'Process'}
           </Text>
         </TouchableOpacity>
+        
+        {item.isProcessed && (
+          <TouchableOpacity
+            style={[styles.fileButton, { backgroundColor: '#4CAF50' }]}
+            onPress={() => shareFile(item)}
+            disabled={processing || sharing}
+          >
+            <Text style={styles.fileButtonText}>Share</Text>
+          </TouchableOpacity>
+        )}
+        
+        {item.isProcessed && (
+          <TouchableOpacity
+            style={[styles.fileButton, { backgroundColor: '#2196F3' }]}
+            onPress={() => saveFileToDownloads(item)}
+            disabled={processing || sharing}
+          >
+            <Text style={styles.fileButtonText}>Save</Text>
+          </TouchableOpacity>
+        )}
+        
         <TouchableOpacity
           style={[styles.fileButton, { backgroundColor: '#F44336' }]}
           onPress={() => deleteFile(item)}
-          disabled={processing}
+          disabled={processing || sharing}
         >
           <Text style={styles.fileButtonText}>Delete</Text>
         </TouchableOpacity>
@@ -563,15 +690,17 @@ const DataProcessor = () => {
       <TouchableOpacity
         style={styles.refreshButton}
         onPress={findIMUDataFiles}
-        disabled={processing}
+        disabled={processing || sharing}
       >
         <Text style={styles.buttonText}>Refresh Files</Text>
       </TouchableOpacity>
       
-      {processing && (
+      {(processing || sharing) && (
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color="#26A69A" />
-          <Text style={styles.loadingText}>Processing data...</Text>
+          <Text style={styles.loadingText}>
+            {processing ? "Processing data..." : "Sharing file..."}
+          </Text>
         </View>
       )}
       
