@@ -283,7 +283,7 @@ const DataProcessor = () => {
     const velocityZ: number[] = [0];
     
     for (let i = 1; i < data.length; i++) {
-      const dt = data[i].timestamp - data[i-1].timestamp;
+      const dt = data[i].timestamp;
       if (dt <= 0) continue;
       
       const ax = data[i].accelX;
@@ -308,7 +308,7 @@ const DataProcessor = () => {
     const distances: number[] = [0];
     
     for (let i = 1; i < data.length; i++) {
-      const dt = data[i].timestamp - data[i-1].timestamp;
+      const dt = data[i].timestamp;
       if (dt <= 0) continue;
       
       const sx = (velocityX[i] + velocityX[i-1]) / 2 * dt;
