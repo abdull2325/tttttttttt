@@ -6,6 +6,17 @@ const Colors = {
   secondary: '#333',
   text: 'white',
   textMuted: '#ccc',
+  accent: '#800000', // Maroon red
+  border: '#444',    // Grey for borders and switches
+  card: '#232323',   // Card/dark background
+  error: '#FF4C4C',  // Error red
+  textSecondary: '#E0E0E0', // Light grey for secondary text
+};
+
+// Add the Fonts object for custom font usage
+const Fonts = {
+  regular: 'Montserrat-Regular',
+  bold: 'Montserrat-Bold',
 };
 
 const CommonStyles = StyleSheet.create({
@@ -44,4 +55,5 @@ const CommonStyles = StyleSheet.create({
   },
 });
 
-export { Colors, CommonStyles };
+export { Colors, Fonts, CommonStyles };
+// Fonts is now exported and can be used in your components

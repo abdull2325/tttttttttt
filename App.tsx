@@ -110,7 +110,7 @@ const App = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen 
-            name="Registration" 
+            name="Register" 
             component={Registration}
             options={{ headerShown: false }}
           />

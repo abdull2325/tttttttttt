@@ -1,189 +1,200 @@
 import React from 'react';
-import { View, StyleSheet, ScrollView, Dimensions,TouchableOpacity } from 'react-native';
-import { Text, useTheme, Card , Icon} from 'react-native-paper';
-
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { View, StyleSheet, ScrollView, Dimensions, TouchableOpacity, Text } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
+import { Colors, Fonts, CommonStyles } from '../styles/CommonStyles';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import Icon from 'react-native-vector-icons/MaterialCommunityIcons';
+import StartSession from './StartSession';
 import ConnectBall from './ConnectBall';
-import StartSession from './StartSession'; // Import the missing component
-import Feedback from './Feedback';
 import PreviousSessions from './PreviousSessions';
 import Profile from './Profile';
-import { CommonStyles } from '../styles/CommonStyles';
+
 const Tab = createBottomTabNavigator();
 
-const Homepage = () => {
-  const theme = useTheme();
-
+const HomepageScreen = ({ navigation }: { navigation: any }) => {
   const data = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
-    datasets: [{
-      data: [20, 45, 28, 80, 99, 43],
-    }]
+    datasets: [{ data: [20, 45, 28, 80, 99, 43] }]
   };
 
   return (
-    <ScrollView style={[styles.container, { backgroundColor: theme.colors.background }]}>
-      <Card style={[styles.card, { backgroundColor: theme.colors.surface }]}>
-        <Card.Content>
-    <Text variant="headlineMedium" style={{ color: theme.colors.primary }}>
-            Performance Overview
-          </Text>
-          <LineChart
-            data={data}
-            width={Dimensions.get('window').width - 40}
-            height={220}
-            chartConfig={{
-              backgroundColor: theme.colors.surface,
-              backgroundGradientFrom: theme.colors.surface,
-              backgroundGradientTo: theme.colors.surface,
-              decimalPlaces: 0,
-              color: (opacity = 1) => `rgba(${parseInt(theme.colors.primary.slice(1, 3), 16)}, ${parseInt(theme.colors.primary.slice(3, 5), 16)}, ${parseInt(theme.colors.primary.slice(5, 7), 16)}, ${opacity})`,
-              labelColor: (opacity = 1) => theme.colors.primary,
-              propsForDots: {
-                r: '6',
-                strokeWidth: '2',
-                stroke: theme.colors.secondary
-              }
-            }}
-            bezier
-            style={styles.chart}
-          />
-        </Card.Content>
-      </Card>
+    <ScrollView style={CommonStyles.container} contentContainerStyle={{ paddingBottom: 32 }}>
+      <View style={styles.card}>
+        <Text style={styles.title}>Performance Overview</Text>
+        <LineChart
+          data={data}
+          width={Dimensions.get('window').width - 40}
+          height={220}
+          chartConfig={{
+            backgroundColor: Colors.card,
+            backgroundGradientFrom: Colors.card,
+            backgroundGradientTo: Colors.card,
+            decimalPlaces: 0,
+            color: () => Colors.accent,
+            labelColor: () => Colors.textSecondary,
+            propsForDots: {
+              r: '6',
+              strokeWidth: '2',
+              stroke: Colors.accent
+            }
+          }}
+          bezier
+          style={styles.chart}
+        />
+      </View>
 
       <View style={styles.statsGrid}>
-        <Card style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
-          <Card.Content>
-            <Text variant="titleLarge" style={{ color: theme.colors.primary }}>85 km/h</Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>Speed</Text>
-          </Card.Content>
-        </Card>
-
-        <Card style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
-          <Card.Content>
-            <Text variant="titleLarge" style={{ color: theme.colors.primary }}>125 rpm</Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>Spin</Text>
-          </Card.Content>
-        </Card>
-
-        <Card style={[styles.statCard, { backgroundColor: theme.colors.surface }]}>
-          <Card.Content>
-            <Text variant="titleLarge" style={{ color: theme.colors.primary }}>Left</Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.primary }}>Curve</Text>
-          </Card.Content>
-        </Card>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>85 km/h</Text>
+          <Text style={styles.statLabel}>Speed</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>125 rpm</Text>
+          <Text style={styles.statLabel}>Spin</Text>
+        </View>
+        <View style={styles.statCard}>
+          <Text style={styles.statValue}>Left</Text>
+          <Text style={styles.statLabel}>Curve</Text>
+        </View>
       </View>
-      <TouchableOpacity style={[CommonStyles.button, styles.button]}>
-        <Text style={styles.buttonText}>Start a new Session</Text>
+
+      <TouchableOpacity
+        style={styles.sessionButton}
+        onPress={() => navigation.navigate('Session')}
+      >
+        <Text style={styles.sessionButtonText}>Start a new Session</Text>
       </TouchableOpacity>
     </ScrollView>
   );
 };
 
-function NavigationConfig() {
-  const theme = useTheme();
-  
-  return (
-    <Tab.Navigator
-      screenOptions={{
-        tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          height: 60,
-        },
-        tabBarActiveTintColor: theme.colors.primary,
-        tabBarInactiveTintColor: theme.colors.onSurfaceVariant,
-        tabBarLabelStyle: {
-          fontSize: 12,
-          marginBottom: 5,
-        },
-        headerShown: false,
+const Homepage = () => (
+  <Tab.Navigator
+    screenOptions={({ route }) => ({
+      tabBarStyle: {
+        backgroundColor: Colors.card,
+        height: 80,
+        paddingBottom: 10,
+        paddingTop: 10,
+      },
+      tabBarActiveTintColor: Colors.accent,
+      tabBarInactiveTintColor: Colors.textSecondary,
+      tabBarLabelStyle: {
+        fontSize: 14,
+        marginBottom: 5,
+      },
+      headerShown: false,
+      tabBarIcon: ({ color, size }) => {
+        let iconName = '';
+        switch (route.name) {
+          case 'Home':
+            iconName = 'home';
+            break;
+          case 'Session':
+            iconName = 'play-circle';
+            break;
+          case 'Connect':
+            iconName = 'bluetooth';
+            break;
+          case 'Records':
+            iconName = 'chart-line';
+            break;
+          case 'Profile':
+            iconName = 'account';
+            break;
+          default:
+            iconName = 'circle';
+        }
+        return <Icon name={iconName} size={32} color={color} />;
+      },
+    })}
+  >
+    <Tab.Screen
+      name="Home"
+      component={HomepageScreen}
+      options={{
+        tabBarIcon: ({ color, size }) => (
+          <Icon name="home" size={32} color={color} />
+        ),
       }}
-    >
-      <Tab.Screen 
-        name="HomeScreen"
-        component={Homepage}
-        options={{
-          tabBarLabel: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="home" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen 
-        name="CurrentSession"
-        component={StartSession}
-        options={{
-          tabBarLabel: 'Session',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="play-circle" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen 
-        name="ConnectBallTab"
-        component={ConnectBall}
-        options={{
-          tabBarLabel: 'Connect',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="bluetooth" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen 
-        name="PreviousSessionsTab"
-        component={PreviousSessions}
-        options={{
-          tabBarLabel: 'Records',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="chart-line" size={size} color={color} />
-          ),
-        }}
-      />
-      <Tab.Screen 
-        name="ProfileTab"
-        component={Profile}
-        options={{
-          tabBarLabel: 'Profile',
-          tabBarIcon: ({ color, size }) => (
-            <Icon source="account" size={size} color={color} />
-          ),
-        }}
-      />
-    </Tab.Navigator>
-  );
-}
+    />
+    <Tab.Screen name="Session" component={StartSession} />
+    <Tab.Screen name="Connect" component={ConnectBall} />
+    <Tab.Screen name="Records" component={PreviousSessions} />
+    <Tab.Screen name="Profile" component={Profile} />
+  </Tab.Navigator>
+);
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 15,
-  },
   card: {
-    marginBottom: 15,
+    backgroundColor: Colors.card,
+    borderRadius: 20,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: Colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
     elevation: 4,
+  },
+  title: {
+    color: Colors.text,
+    fontFamily: Fonts.bold,
+    fontSize: 24,
+    marginBottom: 12,
+    textAlign: 'center',
+    letterSpacing: 1,
   },
   chart: {
     marginVertical: 8,
     borderRadius: 16,
   },
-  button: {
-    backgroundColor: '#26A69A', // secondary color from theme
-    borderRadius: 12, // roundness from theme
-  },
-  buttonText: {
-    color: '#E0F2F1', // text color from theme
-  },
   statsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
+    marginBottom: 24,
   },
   statCard: {
+    backgroundColor: Colors.card,
+    borderRadius: 16,
     width: '31%',
-    marginBottom: 15,
+    alignItems: 'center',
+    paddingVertical: 20,
+    shadowColor: Colors.accent,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.10,
+    shadowRadius: 6,
     elevation: 2,
+  },
+  statValue: {
+    color: Colors.accent,
+    fontFamily: Fonts.bold,
+    fontSize: 22,
+    marginBottom: 4,
+  },
+  statLabel: {
+    color: Colors.textSecondary,
+    fontFamily: Fonts.regular,
+    fontSize: 16,
+  },
+  sessionButton: {
+    backgroundColor: Colors.accent,
+    borderRadius: 16,
+    paddingVertical: 18,
+    alignItems: 'center',
+    marginTop: 8,
+    shadowColor: Colors.accent,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25,
+    shadowRadius: 8,
+    elevation: 4,
+  },
+  sessionButtonText: {
+    color: Colors.text,
+    fontFamily: Fonts.bold,
+    fontSize: 18,
+    letterSpacing: 1,
   },
 });
 
-export default NavigationConfig;
+export default Homepage;

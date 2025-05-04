@@ -1,26 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { View, ScrollView, StyleSheet, ToastAndroid, Alert } from 'react-native';
-import { TextInput, Button, Text, Surface, useTheme, Provider as PaperProvider, MD3LightTheme,} from 'react-native-paper';
+import { View, ScrollView, TextInput, Text, TouchableOpacity, StyleSheet, Alert, ToastAndroid, Image, ActivityIndicator } from 'react-native';
 import auth from '@react-native-firebase/auth';
-import { ActivityIndicator } from 'react-native';
+import { Colors, Fonts, CommonStyles } from '../styles/CommonStyles';
 
-const theme = {
-  ...MD3LightTheme,
-  colors: {
-    ...MD3LightTheme.colors,
-    primary: '#00897B',
-    secondary: '#26A69A',
-    tertiary: '#80CBC4',
-    background: '#E0F2F1',
-    surface: '#ffffff',
-    error: '#B71C1C',
-    text: '#004D40',
-    placeholder: '#4DB6AC',
-    backdrop: 'rgba(0, 137, 123, 0.1)',
-  },
-  roundness: 12,
-};
-
+const logo = require('../assets/images/logo.png'); // Adjust path if needed
 
 const Register = ({ navigation }: { navigation: any }) => {
   const [name, setName] = useState('');
@@ -131,183 +114,129 @@ const Register = ({ navigation }: { navigation: any }) => {
 
   if (isVerificationSent) {
     return (
-      <PaperProvider theme={theme}>
-        <Surface style={styles.verificationContainer} elevation={2}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text variant="headlineMedium" style={styles.verificationTitle}>Please verify your email</Text>
-          <Text variant="bodyLarge" style={styles.verificationText}>
-            A verification link has been sent to {email}.{'\n'}
-            Please check your inbox and verify your email.
-          </Text>
-          <Button 
-            mode="contained" 
-            onPress={handleResendVerification}
-            style={styles.button}
-            contentStyle={styles.buttonContent}
-            icon="email-check"
-          >
-            Resend Verification Email
-          </Button>
-          <Button 
-            mode="outlined"
-            onPress={() => setIsVerificationSent(false)}
-            style={[styles.button, styles.outlinedButton]}
-            contentStyle={styles.buttonContent}
-            icon="arrow-left"
-          >
-            Back to Register
-          </Button>
-        </Surface>
-      </PaperProvider>
+      <View style={[CommonStyles.container, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color={Colors.accent} />
+        <Text style={{ color: Colors.text, fontFamily: Fonts.bold, fontSize: 22, marginTop: 24, marginBottom: 8, textAlign: 'center' }}>
+          Please verify your email
+        </Text>
+        <Text style={{ color: Colors.text, fontFamily: Fonts.regular, fontSize: 16, textAlign: 'center', marginBottom: 24 }}>
+          A verification link has been sent to {email}.{'\n'}
+          Please check your inbox and verify your email.
+        </Text>
+        <TouchableOpacity
+          style={[CommonStyles.button, { backgroundColor: Colors.accent }]}
+          onPress={handleResendVerification}
+        >
+          <Text style={CommonStyles.buttonText}>Resend Verification Email</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[CommonStyles.button, { backgroundColor: '#444' }]}
+          onPress={() => setIsVerificationSent(false)}
+        >
+          <Text style={CommonStyles.buttonText}>Back to Register</Text>
+        </TouchableOpacity>
+      </View>
     );
   }
 
   return (
-    <PaperProvider theme={theme}>
-      <ScrollView contentContainerStyle={styles.container}>
-        <Surface style={styles.surface} elevation={2}>
-          <Text variant="headlineLarge" style={styles.title}>Create Account</Text>
+    <ScrollView contentContainerStyle={[CommonStyles.container, { justifyContent: 'flex-start' }]}>
+      <View style={{ alignItems: 'center', marginTop: 40, marginBottom: 0 }}>
+        <Image
+          source={logo}
+          style={{ width: 280, height: 280, resizeMode: 'contain' }}
+        />
+      </View>
 
-          <TextInput
-            label="Full Name"
-            value={name}
-            onChangeText={setName}
-            mode="outlined"
-            disabled={isLoading}
-            style={styles.input}
-            right={<TextInput.Icon icon="account" />}
-          />
+      {/* Registration form fields */}
+      <View style={{ marginTop: 0 }}>
+        <TextInput
+          placeholder="Full Name"
+          placeholderTextColor={Colors.textSecondary}
+          value={name}
+          onChangeText={setName}
+          editable={!isLoading}
+          style={CommonStyles.input}
+        />
 
-          <TextInput
-            label="Email"
-            value={email}
-            onChangeText={setEmail}
-            mode="outlined"
-            disabled={isLoading}
-            keyboardType="email-address"
-            autoCapitalize="none"
-            style={styles.input}
-            right={<TextInput.Icon icon="at" />}
-          />
+        <TextInput
+          placeholder="Email"
+          placeholderTextColor={Colors.textSecondary}
+          value={email}
+          onChangeText={setEmail}
+          editable={!isLoading}
+          keyboardType="email-address"
+          autoCapitalize="none"
+          style={CommonStyles.input}
+        />
 
-          <TextInput
-            label="Password"
-            value={password}
-            onChangeText={setPassword}
-            mode="outlined"
-            disabled={isLoading}
-            secureTextEntry={!showPassword}
-            style={styles.input}
-            right={
-              <TextInput.Icon 
-                icon={showPassword ? "eye-off" : "eye"}
-                onPress={() => setShowPassword(!showPassword)}
-              />
-            }
-          />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor={Colors.textSecondary}
+          value={password}
+          onChangeText={setPassword}
+          editable={!isLoading}
+          secureTextEntry={!showPassword}
+          style={CommonStyles.input}
+        />
 
-          <TextInput
-            label="Confirm Password"
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            mode="outlined"
-            disabled={isLoading}
-            secureTextEntry={!showConfirmPassword}
-            style={styles.input}
-            right={
-              <TextInput.Icon 
-                icon={showConfirmPassword ? "eye-off" : "eye"}
-                onPress={() => setShowConfirmPassword(!showConfirmPassword)}
-              />
-            }
-          />
+        <TextInput
+          placeholder="Confirm Password"
+          placeholderTextColor={Colors.textSecondary}
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+          editable={!isLoading}
+          secureTextEntry={!showConfirmPassword}
+          style={CommonStyles.input}
+        />
 
-          {error ? <Text style={styles.errorText}>{error}</Text> : null}
+        {/* Show/Hide toggles below both password fields */}
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 16 }}>
+          <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
+            <Text style={{ color: Colors.accent, fontFamily: Fonts.regular }}>
+              {showPassword ? 'Hide Password' : 'Show Password'}
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
+            <Text style={{ color: Colors.accent, fontFamily: Fonts.regular }}>
+              {showConfirmPassword ? 'Hide Password' : 'Show Password'}
+            </Text>
+          </TouchableOpacity>
+        </View>
+      </View>
 
-          <Button
-            mode="contained"
-            onPress={handleRegister}
-            disabled={isLoading}
-            loading={isLoading}
-            style={styles.button}
-            contentStyle={styles.buttonContent}
-            icon="account-plus"
-          >
-            Register
-          </Button>
+      {error ? (
+        <Text style={{ color: Colors.error, fontFamily: Fonts.regular, marginBottom: 16, textAlign: 'center' }}>{error}</Text>
+      ) : null}
 
-          <Button
-            mode="text"
-            onPress={() => navigation.navigate('Login')}
-            style={styles.textButton}
-            icon="login"
-          >
-            Already have an account? Login
-          </Button>
-        </Surface>
-      </ScrollView>
-    </PaperProvider>
+      <TouchableOpacity
+        style={[
+          CommonStyles.button,
+          { backgroundColor: '#444' } // Grey background for visibility
+        ]}
+        onPress={handleRegister}
+        disabled={isLoading}
+      >
+        {isLoading ? (
+          <ActivityIndicator color={Colors.text} />
+        ) : (
+          <Text style={CommonStyles.buttonText}>Register</Text>
+        )}
+      </TouchableOpacity>
+
+      {/* Subtle login text below the button */}
+      <View style={{ flexDirection: 'row', justifyContent: 'center', marginTop: 16 }}>
+        <Text style={{ color: Colors.text, fontFamily: Fonts.regular, fontSize: 14 }}>
+          Already have an account?{' '}
+        </Text>
+        <TouchableOpacity onPress={() => navigation.navigate('Login')}>
+          <Text style={{ color: Colors.text, fontFamily: Fonts.bold, fontSize: 14 }}>
+            Login
+          </Text>
+        </TouchableOpacity>
+      </View>
+    </ScrollView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    padding: 16,
-    backgroundColor: theme.colors.background,
-  },
-  surface: {
-    padding: 24,
-    borderRadius: theme.roundness,
-    marginVertical: 16,
-    backgroundColor: theme.colors.surface,
-  },
-  verificationContainer: {
-    flex: 1,
-    padding: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-    backgroundColor: theme.colors.surface,
-  },
-  title: {
-    textAlign: 'center',
-    marginBottom: 24,
-    color: theme.colors.primary,
-    fontWeight: 'bold',
-  },
-  verificationTitle: {
-    textAlign: 'center',
-    marginTop: 24,
-    color: theme.colors.primary,
-    fontWeight: 'bold',
-  },
-  verificationText: {
-    textAlign: 'center',
-    marginVertical: 16,
-    color: theme.colors.text,
-  },
-  input: {
-    marginBottom: 16,
-    backgroundColor: theme.colors.surface,
-  },
-  button: {
-    marginTop: 8,
-  },
-  buttonContent: {
-    paddingVertical: 8,
-  },
-  outlinedButton: {
-    marginTop: 8,
-    borderColor: theme.colors.primary,
-  },
-  textButton: {
-    marginTop: 16,
-  },
-  errorText: {
-    color: theme.colors.error,
-    textAlign: 'center',
-    marginBottom: 16,
-  },
-});
 
 export default Register;
